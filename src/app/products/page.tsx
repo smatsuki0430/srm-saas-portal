@@ -1,34 +1,34 @@
+// src/app/products/page.tsx
 import Link from "next/link";
-import { products } from "@/lib/products";
+import { products } from "../../lib/products";
 
 export default function ProductsPage() {
   return (
-    <div>
-      <div className="pageHead">
-        <h1>Products</h1>
-        <p className="muted">
+    <div className="container">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Products</h1>
+        <p className="pageDesc">
           SRMが提供するプロダクト一覧です。各ページで概要とPricing（モデル/プラン）を確認できます。
         </p>
       </div>
 
       <div className="grid">
         {products.map((p) => (
-          <div key={p.slug} className="card">
+          <div className="card" key={p.slug}>
             <div className="cardTop">
-              <div className="cardTitle">{p.name}</div>
-              <div className="cardTag">{p.tagline}</div>
-            </div>
-
-            <div className="cardBody">
-              <p className="muted">{p.summary}</p>
+              <div className="cardTitleRow">
+                <h2 className="cardTitle">{p.name}</h2>
+                <span className="badge">{p.badge}</span>
+              </div>
+              <p className="cardTagline">{p.tagline}</p>
               <ul className="list">
-                {p.bullets.map((b, i) => (
-                  <li key={i}>{b}</li>
+                {p.features.slice(0, 3).map((f) => (
+                  <li key={f}>{f}</li>
                 ))}
               </ul>
             </div>
 
-            <div className="cardFooter">
+            <div className="cardActions">
               <Link className="btn btnGhost" href={`/products/${p.slug}`}>
                 View details
               </Link>

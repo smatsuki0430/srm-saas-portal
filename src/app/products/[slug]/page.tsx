@@ -1,80 +1,87 @@
+// src/app/products/[slug]/page.tsx
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { products } from "@/lib/products";
+import { products, getProductBySlug } from "../../../lib/products";
 
-export default function ProductDetailPage({
+export function generateStaticParams() {
+  return products.map((p) => ({ slug: p.slug }));
+}
+
+export default async function ProductDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const product = products.find((p) => p.slug === params.slug);
-  if (!product) return notFound();
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
+
+  if (!product) {
+    notFound();
+  }
 
   return (
-    <div>
+    <div className="container">
       <div className="breadcrumbs">
-        <Link href="/products">← Products</Link>
+        <Link href="/products">Products</Link> <span> / </span>
+        <span>{product.name}</span>
       </div>
 
-      <div className="pageHead">
-        <h1>{product.name}</h1>
-        <p className="muted">{product.tagline}</p>
+      <div className="productHeader">
+        <div className="productTitleRow">
+          <h1 className="productTitle">{product.name}</h1>
+          <span className="badge">{product.badge}</span>
+        </div>
+        <p className="productTagline">{product.tagline}</p>
       </div>
 
       <section className="section">
-        <h2>Overview</h2>
-        <p className="muted">{product.summary}</p>
+        <h2 className="sectionTitle">Overview</h2>
+        <p className="sectionText">{product.overview}</p>
+      </section>
 
+      <section className="section">
+        <h2 className="sectionTitle">Key features</h2>
         <ul className="list">
-          {product.bullets.map((b, i) => (
-            <li key={i}>{b}</li>
+          {product.features.map((f) => (
+            <li key={f}>{f}</li>
           ))}
         </ul>
       </section>
 
       <section className="section">
-        <h2>Pricing</h2>
-        <p className="muted">
-          価格は「Per user / year」を基本に、Enterpriseは個別条件（Direct/Contact）を想定しています。
-        </p>
+        <h2 className="sectionTitle">Pricing（モデル/プラン）</h2>
+        <p className="sectionText">{product.pricingIntro}</p>
 
-        <div className="grid planGrid">
-          {product.pricing.map((plan) => (
-            <div key={plan.name} className="card planCard">
-              <div className="cardTop">
-                <div className="cardTitle">{plan.name}</div>
-                <div className="cardTag">{plan.priceLabel}</div>
+        <div className="plans">
+          {product.plans.map((plan) => (
+            <div className="planCard" key={plan.name}>
+              <div className="planTop">
+                <div className="planName">{plan.name}</div>
+                <div className="planPriceNote">{plan.priceLabel}</div>
+                {plan.note ? <div className="sectionText">{plan.note}</div> : null}
               </div>
 
-              <p className="muted">{plan.description}</p>
-
               <ul className="list">
-                {plan.highlights.map((h, i) => (
-                  <li key={i}>{h}</li>
+                {plan.bullets.map((b) => (
+                  <li key={b}>{b}</li>
                 ))}
               </ul>
 
-              <div className="planBadges">
-                {plan.recommended ? (
-                  <span className="badge badgePrimary">Recommended</span>
-                ) : (
-                  <span className="badge badgeGhost">Plan</span>
-                )}
-              </div>
-
-              <div className="cardFooter">
-                <Link className="btn btnPrimary" href="/products">
-                  Request / Next
-                </Link>
+              <div className="ctaRow">
+                <a className="btn btnGhost" href="#" aria-disabled="true">
+                  Contact sales
+                </a>
               </div>
             </div>
           ))}
         </div>
-
-        <div className="muted footNote">
-          ※ ここは後で、Stripe/Firebase導入後に「購入導線」「問い合わせ導線」に差し替え可能です。
-        </div>
       </section>
+
+      <div className="ctaRow" style={{ paddingBottom: 36 }}>
+        <Link className="btn btnGhost" href="/products">
+          Back to Products
+        </Link>
+      </div>
     </div>
   );
 }
