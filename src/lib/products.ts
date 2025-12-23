@@ -1,6 +1,6 @@
 // src/lib/products.ts
 
-export type Locale = "ja" | "en";
+export type Locale = "jp" | "en";
 
 export type Plan = {
   name: string;

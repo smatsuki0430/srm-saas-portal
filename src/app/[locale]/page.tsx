@@ -1,26 +1,30 @@
 // src/app/[locale]/page.tsx
 import Link from "next/link";
+import { type LocalePath, toLang } from "@/lib/locale";
 
 export default async function HomePage({
   params,
 }: {
-  params: Promise<{ locale: "ja" | "en" }>;
+  params: Promise<{ locale: LocalePath }>;
 }) {
   const { locale } = await params;
+  const lang = toLang(locale);
 
   const t =
-    locale === "ja"
+    lang === "ja"
       ? {
           kicker: "SRM SaaS Portal",
           title: "SRM SaaS Portal",
           desc: "SRMが提供するプロダクト一覧と、各プロダクトの概要・Pricing（モデル/プラン）を確認できます。",
-          btn1: "Browse Products",
+          btn1: "プロダクトを見る",
+          note: "Pricingは各Productページ内で解説します（共通Pricingページは作りません）。",
         }
       : {
           kicker: "SRM SaaS Portal",
           title: "SRM SaaS Portal",
           desc: "Browse SRM products and view overview + pricing model/plans on each product page.",
           btn1: "Browse Products",
+          note: "Pricing is explained within each product page (no shared pricing page).",
         };
 
   return (
@@ -36,11 +40,7 @@ export default async function HomePage({
           </Link>
         </div>
 
-        <div className="heroNote">
-          {locale === "ja"
-            ? "Pricingは各Productページ内で解説します（共通Pricingページは作りません）。"
-            : "Pricing is explained within each product page (no shared pricing page)."}
-        </div>
+        <div className="heroNote">{t.note}</div>
       </section>
     </div>
   );

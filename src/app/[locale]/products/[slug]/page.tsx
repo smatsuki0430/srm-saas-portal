@@ -5,9 +5,9 @@ import { products, getProductBySlug, type Locale } from "../../../../lib/product
 
 type Params = { locale: Locale; slug: string };
 
-// SSG用：/ja/products/<slug> と /en/products/<slug> を生成
+// SSG用：/jp/products/<slug> と /en/products/<slug> を生成
 export async function generateStaticParams() {
-  const locales: Locale[] = ["ja", "en"];
+  const locales: Locale[] = ["jp", "en"];
   const slugs = products.map((p) => p.slug);
   return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }

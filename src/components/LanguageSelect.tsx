@@ -2,31 +2,21 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-
-const LOCALES = ["ja", "en"] as const;
-
-function getLocaleFromPath(pathname: string) {
-  const seg = pathname.split("/")[1];
-  return seg === "en" ? "en" : "ja";
-}
+import {
+  type LocalePath,
+  normalizeLocalePath,
+  replaceLocaleInPath,
+} from "@/lib/locale";
 
 export default function LanguageSelect() {
   const router = useRouter();
   const pathname = usePathname();
-  const current = getLocaleFromPath(pathname);
 
-  const onChange = (nextLocale: string) => {
-    const parts = pathname.split("/");
-    const seg1 = parts[1];
+  const seg1 = pathname.split("/")[1];
+  const current: LocalePath = normalizeLocalePath(seg1);
 
-    if (LOCALES.includes(seg1 as any)) {
-      parts[1] = nextLocale;
-    } else {
-      // middleware で基本来ない想定だが一応
-      parts.splice(1, 0, nextLocale);
-    }
-
-    const nextPath = parts.join("/") || "/";
+  const onChange = (nextLocale: LocalePath) => {
+    const nextPath = replaceLocaleInPath(pathname, nextLocale);
     router.push(nextPath);
   };
 
@@ -34,10 +24,10 @@ export default function LanguageSelect() {
     <select
       className="langSelect"
       value={current}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value as LocalePath)}
       aria-label="Language"
     >
-      <option value="ja">日本語</option>
+      <option value="jp">日本語</option>
       <option value="en">English</option>
     </select>
   );

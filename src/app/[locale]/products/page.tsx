@@ -1,6 +1,7 @@
 // src/app/[locale]/products/page.tsx
 import Link from "next/link";
 import { getProducts, type Locale } from "@/lib/products";
+import { toLang } from "@/lib/locale";
 
 export default async function ProductsPage({
   params,
@@ -10,9 +11,11 @@ export default async function ProductsPage({
   const { locale } = await params;
   const items = getProducts(locale);
 
-  const title = locale === "ja" ? "Products" : "Products";
+  const lang = toLang(locale);
+
+  const title = "Products";
   const desc =
-    locale === "ja"
+    lang === "ja"
       ? "SRMが提供するプロダクト一覧です。各ページで概要とPricing（モデル/プラン）を確認できます。"
       : "Browse SRM products. Each page includes overview and pricing model/plans.";
 
@@ -42,7 +45,10 @@ export default async function ProductsPage({
             </div>
 
             <div className="cardActions">
-              <Link className="btn btnGhost" href={`/${locale}/products/${p.slug}`}>
+              <Link
+                className="btn btnGhost"
+                href={`/${locale}/products/${p.slug}`}
+              >
                 View details
               </Link>
             </div>

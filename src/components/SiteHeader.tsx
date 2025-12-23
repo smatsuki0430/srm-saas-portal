@@ -4,20 +4,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LanguageSelect from "@/components/LanguageSelect";
-
-function getLocaleFromPath(pathname: string) {
-  const seg = pathname.split("/")[1];
-  return seg === "en" ? "en" : "ja";
-}
+import { normalizeLocalePath, toLang } from "@/lib/locale";
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const locale = getLocaleFromPath(pathname);
+  const seg1 = pathname.split("/")[1];
+  const localePath = normalizeLocalePath(seg1);
+  const lang = toLang(localePath);
 
   return (
     <header className="header">
       <div className="headerInner">
-        <Link className="brand" href={`/${locale}`}>
+        <Link className="brand" href={`/${localePath}`}>
           <span className="brandWrap">
             <img
               src="/brand/srm.png"
@@ -30,17 +28,16 @@ export default function SiteHeader() {
         </Link>
 
         <nav className="nav">
-          <Link className="navLink" href={`/${locale}/products`}>
-            Products
+          <Link className="navLink" href={`/${localePath}/products`}>
+            {lang === "ja" ? "プロダクト" : "Products"}
           </Link>
         </nav>
 
         <div className="navCta">
-          <Link className="btn btnPrimary" href={`/${locale}/products`}>
-            Get started
+          <Link className="btn btnPrimary" href={`/${localePath}/products`}>
+            {lang === "ja" ? "はじめる" : "Get started"}
           </Link>
 
-          {/* Get started の右隣 */}
           <LanguageSelect />
         </div>
       </div>
