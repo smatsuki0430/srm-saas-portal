@@ -1,9 +1,12 @@
 // src/app/[locale]/products/[slug]/page.tsx
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { products, getProductBySlug, type Locale } from "@/lib/products";
+import { products, getProductBySlug, type Locale } from "../../../../lib/products";
 
-export function generateStaticParams() {
+type Params = { locale: Locale; slug: string };
+
+// SSG用：/ja/products/<slug> と /en/products/<slug> を生成
+export async function generateStaticParams() {
   const locales: Locale[] = ["ja", "en"];
   const slugs = products.map((p) => p.slug);
   return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
@@ -12,17 +15,20 @@ export function generateStaticParams() {
 export default async function ProductDetailPage({
   params,
 }: {
-  params: Promise<{ locale: Locale; slug: string }>;
+  // Next.js 16 / App Hosting 環境で params が Promise 扱いになるケースに対応
+  params: Promise<Params>;
 }) {
   const { locale, slug } = await params;
-  const product = getProductBySlug(locale, slug);
 
+  const product = getProductBySlug(locale, slug);
   if (!product) notFound();
+
+  const base = `/${locale}`;
 
   return (
     <div className="container">
       <div className="breadcrumbs">
-        <Link href={`/${locale}/products`}>Products</Link> <span> / </span>
+        <Link href={`${base}/products`}>Products</Link> <span> / </span>
         <span>{product.name}</span>
       </div>
 
@@ -35,12 +41,12 @@ export default async function ProductDetailPage({
       </div>
 
       <section className="section">
-        <h2 className="sectionTitle">{product.overviewTitle}</h2>
+        <h2 className="sectionTitle">Overview</h2>
         <p className="sectionText">{product.overview}</p>
       </section>
 
       <section className="section">
-        <h2 className="sectionTitle">{product.featuresTitle}</h2>
+        <h2 className="sectionTitle">Key features</h2>
         <ul className="list">
           {product.features.map((f) => (
             <li key={f}>{f}</li>
@@ -49,12 +55,14 @@ export default async function ProductDetailPage({
       </section>
 
       <section className="section">
-        <h2 className="sectionTitle">{product.pricingTitle}</h2>
-        <p className="sectionText">{product.pricingNote}</p>
+        <h2 className="sectionTitle">Plans / Pricing</h2>
+        <p className="sectionText">
+          各プロダクトの課金・購入導線はプラン内のCTAから実行できます（Stripe/Contact Sales等）。
+        </p>
 
         <div className="plans">
           {product.plans.map((plan) => (
-            <div className="planCard" key={plan.name}>
+            <div key={plan.name} className="planCard">
               <div className="planTop">
                 <div className="planName">{plan.name}</div>
                 <div className="planPriceNote">{plan.priceNote}</div>
@@ -76,8 +84,8 @@ export default async function ProductDetailPage({
         </div>
 
         <div className="ctaRow">
-          <Link className="btn btnGhost" href={`/${locale}/products`}>
-            {product.backLabel}
+          <Link className="btn btnGhost" href={`${base}/products`}>
+            Back to Products
           </Link>
         </div>
       </section>
