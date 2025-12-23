@@ -1,31 +1,24 @@
 // src/app/products/[slug]/page.tsx
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { products, getProductBySlug } from "@/lib/products";
+import { products, getProductBySlug } from "../../../lib/products";
 
-export function generateStaticParams() {
+type Params = { slug: string };
+
+export async function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
 }
 
 export default async function ProductDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  // Next.js 16 / Firebase App Hosting 環境で params が Promise 扱いになるケースに対応
+  params: Promise<Params>;
 }) {
   const { slug } = await params;
+
   const product = getProductBySlug(slug);
-
-  if (!product) {
-    notFound();
-  }
-
-  const isContactSales = product.billingModel === "contact_sales";
-
-  // Stripe系は後で実装するが、今は「決済へ」ボタンを外部リンクに逃がす想定
-  const primaryCtaLabel = isContactSales ? "Contact sales" : "Start subscription";
-  const primaryCtaHref = isContactSales
-    ? "mailto:sales@srm.example?subject=SRM%20Sales%20Inquiry"
-    : (product.stripeCheckoutUrl || "#");
+  if (!product) notFound();
 
   return (
     <div className="container">
@@ -36,25 +29,10 @@ export default async function ProductDetailPage({
 
       <div className="productHeader">
         <div className="productTitleRow">
-          <div className="productTitleLeft">
-            <span className="productLogo" aria-hidden="true">
-              {product.logo ? <img src={product.logo} alt="" /> : null}
-            </span>
-            <h1 className="productTitle">{product.name}</h1>
-          </div>
+          <h1 className="productTitle">{product.name}</h1>
           <span className="badge">{product.badge}</span>
         </div>
-
         <p className="productTagline">{product.tagline}</p>
-
-        <div className="ctaRow">
-          <a className="btn btnPrimary" href={primaryCtaHref}>
-            {primaryCtaLabel}
-          </a>
-          <Link className="btn btnGhost" href="/products">
-            Back to Products
-          </Link>
-        </div>
       </div>
 
       <section className="section">
@@ -74,35 +52,37 @@ export default async function ProductDetailPage({
       <section className="section">
         <h2 className="sectionTitle">Pricing（モデル/プラン）</h2>
         <p className="sectionText">
-          {isContactSales
-            ? "本プロダクトは要件に応じてお見積り（Contact Sales）となります。"
-            : "本プロダクトはStripe決済によるサブスクリプション（セルフサーブ）を想定しています。"}
+          年額/ユーザー課金を想定。プランは「使える機能の範囲」と「出力/共有/統制」で差分を設計します。
         </p>
 
-        {product.plans && product.plans.length > 0 ? (
-          <div className="plans">
-            {product.plans.map((plan) => (
-              <div key={plan.name} className="planCard">
-                <div className="planTop">
-                  <div className="planName">{plan.name}</div>
-                  <div className="planPriceNote">{plan.priceNote}</div>
-                </div>
-
-                <ul className="list">
-                  {plan.bullets.map((b) => (
-                    <li key={b}>{b}</li>
-                  ))}
-                </ul>
-
-                <div className="planCtaRow">
-                  <a className="btn btnGhost" href={primaryCtaHref}>
-                    {primaryCtaLabel}
-                  </a>
-                </div>
+        <div className="plans">
+          {product.plans.map((plan) => (
+            <div key={plan.name} className="planCard">
+              <div className="planTop">
+                <div className="planName">{plan.name}</div>
+                <div className="planPriceNote">{plan.priceNote}</div>
               </div>
-            ))}
-          </div>
-        ) : null}
+
+              <ul className="list">
+                {plan.bullets.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+
+              <div className="ctaRow">
+                <Link className="btn btnGhost" href={plan.ctaHref}>
+                  {plan.ctaLabel}
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="ctaRow">
+          <Link className="btn btnGhost" href="/products">
+            Back to Products
+          </Link>
+        </div>
       </section>
     </div>
   );

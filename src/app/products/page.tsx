@@ -1,6 +1,6 @@
 // src/app/products/page.tsx
 import Link from "next/link";
-import { products } from "@/lib/products";
+import { products } from "./data";
 
 export default function ProductsPage() {
   return (
@@ -17,23 +17,17 @@ export default function ProductsPage() {
           <div key={p.slug} className="card">
             <div className="cardTop">
               <div className="cardTitleRow">
-                <div className="cardTitleLeft">
-                  <span className="productLogo" aria-hidden="true">
-                    {p.logo ? <img src={p.logo} alt="" /> : null}
-                  </span>
-                  <h2 className="cardTitle">{p.name}</h2>
-                </div>
+                <h2 className="cardTitle">{p.name}</h2>
                 <span className="badge">{p.badge}</span>
               </div>
-
               <p className="cardTagline">{p.tagline}</p>
-
-              <ul className="list">
-                {p.features.slice(0, 3).map((f) => (
-                  <li key={f}>{f}</li>
-                ))}
-              </ul>
             </div>
+
+            <ul className="list">
+              {p.features.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
 
             <div className="cardActions">
               <Link className="btn btnGhost" href={`/products/${p.slug}`}>
