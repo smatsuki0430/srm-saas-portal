@@ -1,11 +1,11 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
-import Link from "next/link";
 import "./globals.css";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "SRM SaaS Portal",
-  description: "SRM portal (dev)",
+  description: "SRM portal",
 };
 
 export default function RootLayout({
@@ -16,26 +16,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <header className="header">
-          <div className="headerInner">
-            <Link className="brand" href="/">
-              SRM
-            </Link>
-
-            <nav className="nav">
-              <Link className="navLink" href="/products">
-                Products
-              </Link>
-            </nav>
-
-            <div className="navCta">
-              <Link className="btn btnPrimary" href="/products">
-                Get started
-              </Link>
-            </div>
-          </div>
-        </header>
-
+        <SiteHeader />
         <main className="main">{children}</main>
 
         <footer className="footer">

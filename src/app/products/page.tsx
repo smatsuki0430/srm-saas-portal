@@ -1,6 +1,6 @@
 // src/app/products/page.tsx
 import Link from "next/link";
-import { products } from "../../lib/products";
+import { products } from "@/lib/products";
 
 export default function ProductsPage() {
   return (
@@ -14,13 +14,20 @@ export default function ProductsPage() {
 
       <div className="grid">
         {products.map((p) => (
-          <div className="card" key={p.slug}>
+          <div key={p.slug} className="card">
             <div className="cardTop">
               <div className="cardTitleRow">
-                <h2 className="cardTitle">{p.name}</h2>
+                <div className="cardTitleLeft">
+                  <span className="productLogo" aria-hidden="true">
+                    {p.logo ? <img src={p.logo} alt="" /> : null}
+                  </span>
+                  <h2 className="cardTitle">{p.name}</h2>
+                </div>
                 <span className="badge">{p.badge}</span>
               </div>
+
               <p className="cardTagline">{p.tagline}</p>
+
               <ul className="list">
                 {p.features.slice(0, 3).map((f) => (
                   <li key={f}>{f}</li>
