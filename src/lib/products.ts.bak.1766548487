@@ -13,28 +13,10 @@ export type Plan = {
 export type Product = {
   slug: string;
   name: string;
-
-  /** Product list card badge */
   badge: string;
-
-  /** One-liner */
   tagline: string;
-
-  /** Detail page intro */
   overview: string;
-
-  /** Feature list (canonical) */
   features: string[];
-
-  /**
-   * UI互換用（Products一覧が p.bullets を参照する実装があるため）
-   * features をそのまま bullets として提供する
-   */
-  bullets: string[];
-
-  /** /public 配下のロゴパス（例: /products/stratos.png） */
-  logo: string;
-
   plans: Plan[];
 };
 
@@ -52,12 +34,7 @@ export const products: Product[] = [
       "Evidence（根拠の貼り付け・整理）と共有",
       "PPTX export（社内・顧客・投資家向け）",
     ],
-    bullets: [
-      "Strategy Workspace（ICP/Segmentation, 3C, SWOT, PESTEL, 5 Forces など）",
-      "Evidence（根拠の貼り付け・整理）と共有",
-      "PPTX export（社内・顧客・投資家向け）",
-    ],
-    logo: "/products/stratos.png",
+    // Stratos は Contact Sales
     plans: [
       {
         name: "Starter",
@@ -102,12 +79,7 @@ export const products: Product[] = [
       "テンプレ出力（社内共有にそのまま貼れる）",
       "検索・タグ・履歴（予定）",
     ],
-    bullets: [
-      "要約・決定事項・アクションの自動生成",
-      "テンプレ出力（社内共有にそのまま貼れる）",
-      "検索・タグ・履歴（予定）",
-    ],
-    logo: "/products/videonotes.png",
+    // VideoNotes は Stripe 決済（Contact Sales は出さない）
     plans: [
       {
         name: "Starter",
@@ -142,8 +114,7 @@ export const products: Product[] = [
     overview:
       "意思決定と実行の情報を一つの流れに統合し、Owner/Due を明確化。チームの前進を阻む曖昧さを減らします。",
     features: ["Decision Summary", "Owner/Dueの明確化", "進捗の見える化（予定）"],
-    bullets: ["Decision Summary", "Owner/Dueの明確化", "進捗の見える化（予定）"],
-    logo: "/products/doneflow.png",
+    // DoneFlow は Stripe 決済（Contact Sales は出さない）
     plans: [
       {
         name: "Starter",
@@ -178,8 +149,7 @@ export const products: Product[] = [
     overview:
       "調査時の根拠を“再利用できる形”で保存し、引用や出典管理を一元化します。",
     features: ["Web clipping", "Citation/Source管理", "保持・削除ポリシー設計（予定）"],
-    bullets: ["Web clipping", "Citation/Source管理", "保持・削除ポリシー設計（予定）"],
-    logo: "/products/citesnap.png",
+    // CiteSnap は Stripe 決済（Contact Sales は出さない）
     plans: [
       {
         name: "Starter",
@@ -218,12 +188,7 @@ export const products: Product[] = [
       "SKU/権限（Permission Set）設計",
       "監査/エクスポート（planned）",
     ],
-    bullets: [
-      "Salesforce Native（Managed Package想定）",
-      "SKU/権限（Permission Set）設計",
-      "監査/エクスポート（planned）",
-    ],
-    logo: "/products/d2v-os.png",
+    // D2V OS は Contact Sales
     plans: [
       {
         name: "Starter",
@@ -250,19 +215,13 @@ export const products: Product[] = [
   },
 ];
 
-/**
- * ✅ locale 側の Products 一覧が import している export を維持
- * - getProducts() / getProducts(locale) の両方で動くようにする
- */
-export function getProducts(): Product[];
-export function getProducts(_locale: Locale): Product[];
-export function getProducts(_locale?: Locale) {
+// ✅ locale 側の Products 一覧が import している export を復活
+export function getProducts(_locale: Locale) {
+  // いまは日本語固定データだが、呼び出し互換のために残す
   return products;
 }
 
-/**
- * ✅ 互換性のためオーバーロード：slug1引数/locale+slug2引数どちらでも動く
- */
+// ✅ 互換性のためオーバーロード：slug1引数/locale+slug2引数どちらでも動く
 export function getProductBySlug(slug: string): Product | undefined;
 export function getProductBySlug(locale: Locale, slug: string): Product | undefined;
 export function getProductBySlug(a: string, b?: string): Product | undefined {

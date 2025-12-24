@@ -22,8 +22,8 @@
   --shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
   --shadow2: 0 10px 35px rgba(0, 0, 0, 0.40);
 
-  --accent: #5aa6ff;
-  --accent2: #9b7bff;
+  --accent: #5aa6ff;   /* blue */
+  --accent2: #9b7bff;  /* violet */
   --ok: #58d1a2;
 
   --radius: 18px;
@@ -39,6 +39,7 @@ body {
   padding: 0;
   margin: 0;
 
+  /* layered background */
   background:
     radial-gradient(900px 520px at 20% 0%, rgba(90,166,255,0.22), transparent 60%),
     radial-gradient(820px 520px at 80% 10%, rgba(155,123,255,0.18), transparent 60%),
@@ -377,7 +378,7 @@ a {
 .cardBullets {
   margin: 10px 0 0;
   padding-left: 18px;
-  color: rgba(255, 255, 255, 0.80);
+  color: rgba(255, 255, 255, 0.80); /* ← ここで「見えない」を潰す */
   line-height: 1.7;
 }
 
@@ -392,210 +393,7 @@ a {
 }
 
 /* =========================
-   Product detail (NEW)
-========================= */
-.detailWrap {
-  padding: 10px 0 40px;
-}
-
-.detailTopbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 8px 0 18px;
-}
-
-.crumbs {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: rgba(255, 255, 255, 0.70);
-  font-weight: 800;
-}
-
-.crumbLink {
-  color: rgba(255, 255, 255, 0.74);
-  border-bottom: 1px solid rgba(255,255,255,0.10);
-}
-
-.crumbLink:hover {
-  color: rgba(255, 255, 255, 0.95);
-  border-bottom-color: rgba(255,255,255,0.20);
-}
-
-.crumbSep {
-  color: rgba(255, 255, 255, 0.45);
-}
-
-.crumbNow {
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.detailHero {
-  border-radius: var(--radius2);
-  background:
-    radial-gradient(720px 260px at 15% 0%, rgba(90,166,255,0.18), transparent 60%),
-    radial-gradient(720px 260px at 85% 0%, rgba(155,123,255,0.14), transparent 60%),
-    rgba(255, 255, 255, 0.06);
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: var(--shadow);
-  padding: 22px 22px;
-}
-
-.detailHeroGrid {
-  display: grid;
-  grid-template-columns: 1fr 170px;
-  gap: 18px;
-  align-items: center;
-}
-
-.detailKicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 100%;
-
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.78);
-  font-weight: 800;
-  font-size: 13px;
-
-  margin-bottom: 12px;
-}
-
-.detailTitle {
-  margin: 0;
-  font-size: 44px;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  font-weight: 950;
-}
-
-.detailLead {
-  margin: 12px 0 0;
-  color: rgba(255, 255, 255, 0.70);
-  line-height: 1.8;
-}
-
-.detailHeroLogo {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.detailLogo150 {
-  width: 150px;
-  height: 150px;
-  border-radius: 26px;
-  object-fit: contain;
-
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: var(--shadow2);
-}
-
-.detailSection {
-  margin-top: 18px;
-  border-radius: var(--radius2);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  padding: 18px 20px;
-}
-
-.detailH2 {
-  margin: 0 0 10px;
-  font-size: 20px;
-  font-weight: 950;
-  letter-spacing: -0.01em;
-}
-
-.detailText {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.72);
-  line-height: 1.85;
-}
-
-.detailList {
-  margin: 0;
-  padding-left: 20px;
-  color: rgba(255, 255, 255, 0.80);
-  line-height: 1.85;
-}
-
-.detailList li {
-  margin: 6px 0;
-}
-
-.detailSectionHead {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.detailHint {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.62);
-  line-height: 1.7;
-}
-
-.planGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.planCard {
-  border-radius: var(--radius2);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: var(--shadow2);
-  padding: 16px 16px;
-}
-
-.planTop {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 10px;
-}
-
-.planName {
-  font-weight: 950;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.planPriceNote {
-  font-weight: 800;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.planBullets {
-  margin: 10px 0 0;
-  padding-left: 18px;
-  color: rgba(255, 255, 255, 0.80);
-  line-height: 1.75;
-}
-
-.planBullets li {
-  margin: 6px 0;
-}
-
-.planCtaRow {
-  margin-top: 12px;
-  display: flex;
-  justify-content: flex-start;
-}
-
-/* =========================
-   Brand logo / Language select
+   (Existing) Brand logo / Language select
 ========================= */
 .brandWrap {
   display: inline-flex;
@@ -633,21 +431,5 @@ a {
 
   .container {
     padding: 18px 16px;
-  }
-
-  .detailHeroGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .detailHeroLogo {
-    justify-content: flex-start;
-  }
-
-  .detailTitle {
-    font-size: 34px;
-  }
-
-  .planGrid {
-    grid-template-columns: 1fr;
   }
 }

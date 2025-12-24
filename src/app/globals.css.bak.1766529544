@@ -1,0 +1,426 @@
+/* src/app/globals.css */
+
+:root {
+  --bg: #ffffff;
+  --fg: #0b0f18;
+  --muted: #667085;
+  --line: #e6e8ee;
+  --card: #ffffff;
+  --chip: #f2f4f7;
+  --shadow: 0 1px 0 rgba(16, 24, 40, 0.04);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic",
+    "Meiryo", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  z-index: 10;
+}
+
+.headerInner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.navLink {
+  color: #344054;
+  font-weight: 600;
+}
+
+.navLink:hover {
+  color: var(--fg);
+}
+
+.navCta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.main {
+  min-height: calc(100vh - 140px);
+}
+
+.footer {
+  border-top: 1px solid var(--line);
+  background: #fff;
+}
+
+.footerInner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.footerLinks {
+  display: flex;
+  gap: 14px;
+}
+
+.footerLinks a {
+  color: var(--muted);
+}
+
+.footerLinks a:hover {
+  color: var(--fg);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  transition: transform 0.03s ease, background 0.1s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btnPrimary {
+  background: #0b0f18;
+  color: #fff;
+  border-color: #0b0f18;
+}
+
+.btnPrimary:hover {
+  background: #111827;
+}
+
+.btnGhost {
+  background: #fff;
+  color: var(--fg);
+}
+
+.btnGhost:hover {
+  background: #f8fafc;
+}
+
+.hero {
+  padding: 54px 0 28px;
+}
+
+.heroKicker {
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.heroTitle {
+  font-size: 56px;
+  line-height: 1.04;
+  margin: 0 0 14px;
+  letter-spacing: -0.02em;
+}
+
+.heroDesc {
+  margin: 0 0 18px;
+  color: #475467;
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 860px;
+}
+
+.heroActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.heroNote {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pageHeader {
+  padding: 22px 0 16px;
+}
+
+.pageTitle {
+  font-size: 38px;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.pageDesc {
+  margin: 0;
+  color: #475467;
+  max-width: 820px;
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 18px 0 40px;
+}
+
+@media (max-width: 920px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .heroTitle {
+    font-size: 44px;
+  }
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cardTop {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--chip);
+  border: 1px solid var(--line);
+  color: #344054;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cardTagline {
+  margin: 0;
+  color: #475467;
+  line-height: 1.6;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+  color: #101828;
+}
+
+.list li {
+  margin: 6px 0;
+  color: #0b0f18;
+}
+
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.breadcrumbs {
+  padding: 18px 0 8px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.breadcrumbs a {
+  color: var(--muted);
+}
+
+.breadcrumbs a:hover {
+  color: var(--fg);
+}
+
+.productHeader {
+  padding: 10px 0 10px;
+}
+
+.productTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.productTitle {
+  margin: 0;
+  font-size: 40px;
+  letter-spacing: -0.02em;
+}
+
+.productTagline {
+  margin: 10px 0 0;
+  color: #475467;
+  line-height: 1.7;
+  max-width: 980px;
+}
+
+.section {
+  border-top: 1px solid var(--line);
+  padding: 18px 0;
+}
+
+.sectionTitle {
+  margin: 0 0 10px;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.sectionText {
+  margin: 0 0 12px;
+  color: #475467;
+  line-height: 1.7;
+  max-width: 980px;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+@media (max-width: 920px) {
+  .plans {
+    grid-template-columns: 1fr;
+  }
+}
+
+.planCard {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.planTop {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planName {
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.planPriceNote {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.ctaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+/* 追加：ブランドロゴ・言語セレクト */
+.brandWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandLogo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.brandText {
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.langSelect {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #111827;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+}
