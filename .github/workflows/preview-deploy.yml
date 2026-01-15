@@ -11,6 +11,7 @@ permissions:
 
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  CLOUDSDK_CORE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
   GCP_REGION: asia-northeast1
   APP_NAME: srm-saas-portal
   CONTAINER_PORT: "8080"
@@ -30,31 +31,63 @@ jobs:
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
 
+      # Keep going even if deploy fails so we can comment build log URL on PR
       - name: Deploy Preview to Cloud Run
+        continue-on-error: true
         run: |
+          set -euo pipefail
+
           SERVICE_NAME="${APP_NAME}-pr-${{ github.event.pull_request.number }}"
           gcloud config set project "${GCP_PROJECT_ID}"
 
+          OUT="$(mktemp)"
+          echo "Deploying Cloud Run service: ${SERVICE_NAME}"
+
+          set +e
           gcloud run deploy "${SERVICE_NAME}" \
             --source . \
             --region "${GCP_REGION}" \
             --allow-unauthenticated \
             --port "${CONTAINER_PORT}" \
             --labels "env=preview,pr=${{ github.event.pull_request.number }}" \
-            --quiet
+            2>&1 | tee "${OUT}"
+          RC=${PIPESTATUS[0]}
+          set -e
 
-          URL=$(gcloud run services describe "${SERVICE_NAME}" --region "${GCP_REGION}" --format="value(status.url)")
-          echo "PREVIEW_URL=${URL}" >> $GITHUB_ENV
+          # Extract Cloud Build log URL if present
+          LOG_URL=$(grep -Eo 'https://console\.cloud\.google\.com/cloud-build/builds[^ ]+' "${OUT}" | tail -n 1 || true)
+          echo "BUILD_LOG_URL=${LOG_URL}" >> "$GITHUB_ENV"
 
-      - name: Comment Preview URL on PR
+          if [ "${RC}" -eq 0 ]; then
+            URL=$(gcloud run services describe "${SERVICE_NAME}" --region "${GCP_REGION}" --format="value(status.url)" 2>/dev/null || true)
+            echo "PREVIEW_URL=${URL}" >> "$GITHUB_ENV"
+            echo "DEPLOY_OK=1" >> "$GITHUB_ENV"
+            echo "Deploy succeeded. URL=${URL}"
+          else
+            echo "DEPLOY_OK=0" >> "$GITHUB_ENV"
+            echo "Deploy failed (rc=${RC}). Build log URL=${LOG_URL}"
+          fi
+
+      - name: Comment Preview URL and Build Logs on PR
+        if: always()
         uses: actions/github-script@v7
         with:
           script: |
-            const url = process.env.PREVIEW_URL;
-            const body = `✅ Preview deployed:\n\n${url}\n\nCloud Run service: ${process.env.APP_NAME}-pr-${context.payload.pull_request.number}`;
+            const preview = process.env.PREVIEW_URL || "(not created)";
+            const buildLog = process.env.BUILD_LOG_URL || "(not found in deploy output)";
+            const ok = process.env.DEPLOY_OK === "1";
+            const body =
+              (ok ? "✅ Preview deployed" : "❌ Preview deploy failed") +
+              `\n\nPreview: ${preview}\nBuild logs: ${buildLog}\n\nCloud Run service: ${process.env.APP_NAME}-pr-${context.payload.pull_request.number}`;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
               body
             });
+
+      - name: Fail job if deploy failed
+        if: env.DEPLOY_OK != '1'
+        run: |
+          echo "Deploy failed. See PR comment for build log URL."
+          exit 1
