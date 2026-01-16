@@ -15,7 +15,6 @@ env:
   GCP_REGION: asia-northeast1
   APP_NAME: srm-saas-portal
   CONTAINER_PORT: "8080"
-  NODE_ENV: production
   NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
@@ -24,17 +23,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1) Build in GitHub Actions so the real build error is always visible here.
+      # 1) Build in GitHub Actions so build errors are visible here.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: npm
 
-      - name: Install deps
+      - name: Install deps (include devDependencies)
+        env:
+          NPM_CONFIG_PRODUCTION: "false"
         run: npm ci
 
       - name: Build (Next.js)
+        env:
+          NODE_ENV: production
         run: npm run build
 
       # 2) Auth to GCP (WIF) and deploy
@@ -89,7 +92,6 @@ jobs:
             START_UTC="$(date -u -d '15 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
           fi
 
-          # Get the most recent build created after START_UTC in the same region
           BUILD_ID="$(gcloud builds list \
             --project="${GCP_PROJECT_ID}" \
             --region="${GCP_REGION}" \
@@ -147,5 +149,5 @@ jobs:
       - name: Fail job if deploy failed
         if: env.DEPLOY_OK != '1'
         run: |
-          echo "Deploy failed. Check GitHub Actions logs (npm build) and PR comment (Cloud Build log URL)."
+          echo "Deploy failed. Check logs above (npm build) and PR comment (Cloud Build log URL)."
           exit 1
