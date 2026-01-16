@@ -9,6 +9,10 @@ permissions:
   id-token: write
   pull-requests: write
 
+concurrency:
+  group: preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   CLOUDSDK_CORE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
@@ -50,32 +54,66 @@ jobs:
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Deploy Preview to Cloud Run
+      - name: Deploy Preview to Cloud Run (async + timeout)
         continue-on-error: true
         run: |
           set -euo pipefail
+
           SERVICE_NAME="${APP_NAME}-pr-${{ github.event.pull_request.number }}"
+          echo "SERVICE_NAME=${SERVICE_NAME}" >> "$GITHUB_ENV"
+
           gcloud config set project "${GCP_PROJECT_ID}"
 
           # Mark start time to reliably capture the Cloud Build created by this deploy
           START_UTC="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           echo "START_UTC=${START_UTC}" >> "$GITHUB_ENV"
 
+          # IMPORTANT:
+          # - Use --async to avoid hanging until service becomes Ready.
+          # - Use timeout to avoid indefinite hangs (rare but happens).
           set +e
-          gcloud run deploy "${SERVICE_NAME}" \
+          timeout 25m gcloud run deploy "${SERVICE_NAME}" \
             --source . \
             --region "${GCP_REGION}" \
             --allow-unauthenticated \
             --port "${CONTAINER_PORT}" \
-            --labels "env=preview,pr=${{ github.event.pull_request.number }}"
+            --labels "env=preview,pr=${{ github.event.pull_request.number }}" \
+            --quiet \
+            --async
           RC=$?
           set -e
 
           echo "DEPLOY_RC=${RC}" >> "$GITHUB_ENV"
 
           if [ "${RC}" -eq 0 ]; then
-            URL="$(gcloud run services describe "${SERVICE_NAME}" --region "${GCP_REGION}" --format="value(status.url)" 2>/dev/null || true)"
-            echo "PREVIEW_URL=${URL}" >> "$GITHUB_ENV"
+            echo "DEPLOY_STARTED=1" >> "$GITHUB_ENV"
+          else
+            echo "DEPLOY_STARTED=0" >> "$GITHUB_ENV"
+          fi
+
+      - name: Wait for Preview URL (poll until Ready)
+        if: env.DEPLOY_STARTED == '1'
+        run: |
+          set -euo pipefail
+          gcloud config set project "${GCP_PROJECT_ID}"
+
+          SERVICE_NAME="${SERVICE_NAME:-${APP_NAME}-pr-${{ github.event.pull_request.number }}}"
+
+          URL=""
+          # Up to ~10 minutes (120 * 5s). Adjust if you want longer.
+          for i in $(seq 1 120); do
+            URL="$(gcloud run services describe "${SERVICE_NAME}" \
+              --region "${GCP_REGION}" \
+              --format="value(status.url)" 2>/dev/null || true)"
+            if [ -n "${URL}" ]; then
+              break
+            fi
+            sleep 5
+          done
+
+          echo "PREVIEW_URL=${URL}" >> "$GITHUB_ENV"
+
+          if [ -n "${URL}" ]; then
             echo "DEPLOY_OK=1" >> "$GITHUB_ENV"
           else
             echo "DEPLOY_OK=0" >> "$GITHUB_ENV"
@@ -89,7 +127,7 @@ jobs:
 
           START_UTC="${START_UTC:-}"
           if [ -z "${START_UTC}" ]; then
-            START_UTC="$(date -u -d '15 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
+            START_UTC="$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
           fi
 
           BUILD_ID="$(gcloud builds list \
@@ -126,19 +164,21 @@ jobs:
         with:
           script: |
             const ok = process.env.DEPLOY_OK === "1";
-            const preview = process.env.PREVIEW_URL || "(not created)";
+            const started = process.env.DEPLOY_STARTED === "1";
+            const preview = process.env.PREVIEW_URL || "(not ready yet)";
             const buildLog = process.env.BUILD_LOG_URL || "(not found)";
             const buildId = process.env.BUILD_ID || "(unknown)";
             const buildStatus = process.env.BUILD_STATUS || "(unknown)";
             const rc = process.env.DEPLOY_RC || "(unknown)";
+            const serviceName = process.env.SERVICE_NAME || `${process.env.APP_NAME}-pr-${context.payload.pull_request.number}`;
             const body =
-              (ok ? "✅ Preview deployed" : "❌ Preview deploy failed") +
+              (ok ? "✅ Preview deployed" : (started ? "⏳ Preview deploying (not ready yet)" : "❌ Preview deploy failed")) +
               `\n\nPreview: ${preview}` +
               `\nBuild logs: ${buildLog}` +
               `\nBuild ID: ${buildId}` +
               `\nBuild status: ${buildStatus}` +
               `\nDeploy rc: ${rc}` +
-              `\n\nCloud Run service: ${process.env.APP_NAME}-pr-${context.payload.pull_request.number}`;
+              `\n\nCloud Run service: ${serviceName}`;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -146,8 +186,8 @@ jobs:
               body
             });
 
-      - name: Fail job if deploy failed
+      - name: Fail job if preview URL was not obtained
         if: env.DEPLOY_OK != '1'
         run: |
-          echo "Deploy failed. Check logs above (npm build) and PR comment (Cloud Build log URL)."
+          echo "Preview URL was not obtained. Check: PR comment (Cloud Build logs), and Cloud Run revision logs."
           exit 1
