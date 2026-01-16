@@ -15,6 +15,8 @@ env:
   GCP_REGION: asia-northeast1
   APP_NAME: srm-saas-portal
   CONTAINER_PORT: "8080"
+  NODE_ENV: production
+  NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
   deploy:
@@ -22,6 +24,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1) Build in GitHub Actions so build errors are visible even if Cloud Build logs are not.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build (Next.js)
+        run: npm run build
+
+      # 2) Auth to GCP (WIF) and deploy
       - name: Auth to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
         with:
@@ -35,7 +51,6 @@ jobs:
         continue-on-error: true
         run: |
           set -euo pipefail
-
           SERVICE_NAME="${APP_NAME}-pr-${{ github.event.pull_request.number }}"
           gcloud config set project "${GCP_PROJECT_ID}"
 
@@ -59,54 +74,17 @@ jobs:
             echo "DEPLOY_OK=0" >> "$GITHUB_ENV"
           fi
 
-      - name: Capture latest Cloud Build log URL (regional)
-        if: always()
-        run: |
-          set -euo pipefail
-          gcloud config set project "${GCP_PROJECT_ID}"
-
-          LOG_URL=$(gcloud builds list \
-            --project="${GCP_PROJECT_ID}" \
-            --region="${GCP_REGION}" \
-            --sort-by="~createTime" \
-            --limit=1 \
-            --format="value(logUrl)" 2>/dev/null || true)
-
-          BUILD_ID=$(gcloud builds list \
-            --project="${GCP_PROJECT_ID}" \
-            --region="${GCP_REGION}" \
-            --sort-by="~createTime" \
-            --limit=1 \
-            --format="value(id)" 2>/dev/null || true)
-
-          BUILD_STATUS=$(gcloud builds list \
-            --project="${GCP_PROJECT_ID}" \
-            --region="${GCP_REGION}" \
-            --sort-by="~createTime" \
-            --limit=1 \
-            --format="value(status)" 2>/dev/null || true)
-
-          echo "BUILD_LOG_URL=${LOG_URL}" >> "$GITHUB_ENV"
-          echo "BUILD_ID=${BUILD_ID}" >> "$GITHUB_ENV"
-          echo "BUILD_STATUS=${BUILD_STATUS}" >> "$GITHUB_ENV"
-
-      - name: Comment Preview URL and Build Logs on PR
+      - name: Comment Preview URL on PR
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const ok = process.env.DEPLOY_OK === "1";
             const preview = process.env.PREVIEW_URL || "(not created)";
-            const buildLog = process.env.BUILD_LOG_URL || "(not found)";
-            const buildId = process.env.BUILD_ID || "(unknown)";
-            const buildStatus = process.env.BUILD_STATUS || "(unknown)";
             const rc = process.env.DEPLOY_RC || "(unknown)";
             const body =
               (ok ? "✅ Preview deployed" : "❌ Preview deploy failed") +
               `\n\nPreview: ${preview}` +
-              `\nBuild logs: ${buildLog}` +
-              `\nBuild ID: ${buildId}` +
-              `\nBuild status: ${buildStatus}` +
               `\nDeploy rc: ${rc}` +
               `\n\nCloud Run service: ${process.env.APP_NAME}-pr-${context.payload.pull_request.number}`;
             await github.rest.issues.createComment({
@@ -119,5 +97,5 @@ jobs:
       - name: Fail job if deploy failed
         if: env.DEPLOY_OK != '1'
         run: |
-          echo "Deploy failed. See PR comment for Cloud Build log URL."
+          echo "Deploy failed. See logs above (build/deploy)."
           exit 1
