@@ -8,8 +8,13 @@ permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  CLOUDSDK_CORE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
   GCP_REGION: asia-northeast1
   APP_NAME: srm-saas-portal
 
@@ -28,6 +33,7 @@ jobs:
 
       - name: Delete Preview Service
         run: |
+          set -euo pipefail
           SERVICE_NAME="${APP_NAME}-pr-${{ github.event.pull_request.number }}"
           gcloud config set project "${GCP_PROJECT_ID}"
           gcloud run services delete "${SERVICE_NAME}" --region "${GCP_REGION}" --quiet || true
